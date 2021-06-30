@@ -57,10 +57,21 @@ while getopts :d:a:b:s:hn aflag; do
 done
 
 
-
+## MAJOR VARIABLE PARSING ##
 # clear out positional parameters
 set --
 
+# grabbed from Dave Dopson's answer in stackOverflow: https://stackoverflow.com/questions/59895/how-can-i-get-the-source-directory-of-a-bash-script-from-within-the-script-itsel/246128#246128
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+# end of snippet 
+
+sourcedirectory=$DIR
 workingdirectory=$RUNPATH
 fq1=$(realpath $READ1)
 fq2=$(realpath $READ2)
@@ -70,7 +81,7 @@ FCHA=`date +'%Y/%m/%d' | perl -pe "s/\///g"`
 echo
 echo
 echo
-echo "*** PRISTINE *** (pseudo)pipeline: from fq to assembly including multiple quality steps"
+echo "*** PRISTINE *** (pseudo)workflow: from pair-end fq to assembly including multiple quality steps"
 echo
 echo
 echo
@@ -93,7 +104,7 @@ source /home/aperpos/.bashrc
 eval "$(conda shell.bash hook)"
 
 
-# STEP 01: FASTQC ##
+## STEP 01: FASTQC ##
 echo "## STEP 01: FASTQC ##"
 echo
 echo "creating directory 01_raw_fastqc"
@@ -121,7 +132,7 @@ conda deactivate
 echo
 echo
 echo "now out of virtual environment"
-cd ..
+cd $workingdirectory
 echo
 echo
 echo
@@ -149,7 +160,7 @@ echo
 echo "assigning rcorrector outputs to pipeline variables fq1_rcor and fq2_rcor"
 fq1_rcor=$(realpath $(find . -name *1.cor*))
 fq2_rcor=$(realpath $(find . -name *2.cor*))
-cd ..
+cd $workingdirectory
 echo
 echo
 echo
@@ -181,7 +192,7 @@ echo
 echo "assigning rcorrector outputs to pipeline variables fq1_corrected and fq2_corrected"
 fq1_corrected=$(realpath $(find . -name unfixrm*1.cor*))
 fq2_corrected=$(realpath $(find . -name unfixrm*2.cor*))
-cd ..
+cd $workingdirectory
 module purge
 echo
 echo
@@ -219,7 +230,7 @@ echo
 echo "assigning rcorrector outputs to pipeline variables fq1_trimg and fq2_trimg"
 fq1_trimg=$(realpath $(find . -name *val_1.fq*))
 fq2_trimg=$(realpath $(find . -name *val_2.fq*))
-cd ..
+cd $workingdirectory
 echo
 echo
 echo
@@ -240,7 +251,7 @@ echo "about to remove remaining adapters"
 echo "starting bbduk ( ͡° ͜ʖ ͡°)"
 {
         echo A
-        bbduk.sh in1=$fq1_trimg in2=$fq2_trimg ref=/home/aperpos/ECHI_HEMI_SPECIES/ADAPTER_CONTAMINANTS/bbduk_adapters_contaminants_list.fa ktrim=r k=23 mink=11 hdist=1 tpe tbo out1=${organism_sample_id}_clean_1.fq out2=${organism_sample_id}_clean_2.fq
+        bbduk.sh in1=$fq1_trimg in2=$fq2_trimg ref=${sourcedirectory}/assets/ADAPTER_CONTAMINANTS/bbduk_adapters_contaminants_list.fa ktrim=r k=23 mink=11 hdist=1 tpe tbo out1=${organism_sample_id}_clean_1.fq out2=${organism_sample_id}_clean_2.fq
 } >pristine_05_bbduk.o 2>&1  || exit 1
 
 echo "done bbduk.( ͡~ ͜ʖ ͡°)"
@@ -248,7 +259,7 @@ echo
 echo "assigning adapter-free reads to pipeline variables fq1_bbdu and fq2_bbdu"
 fq1_bbdu=$(realpath $(find . -name *_clean_1.fq))
 fq2_bbdu=$(realpath $(find . -name *_clean_2.fq))
-cd ..
+cd $workingdirectory
 echo
 echo
 echo
@@ -268,7 +279,7 @@ echo
 echo "starting alignment against SILVA database to keep unaligned (==non-ribosomal) reads"
 {
         echo A
-        bowtie2 --quiet --very-sensitive-local --phred33  -x /home/aperpos/ECHI_HEMI_SPECIES/SILVA/SILVA_indexed/SILVA.fasta.bowtie2 -1 $fq1_bbdu -2 $fq2_bbdu --threads 12 --met-file ${organism_sample_id}_bowtie2_metrics.txt --al-conc-gz blacklist_paired_aligned_${organism_sample_id}.fq.gz --un-conc-gz blacklist_paired_unaligned_${organism_sample_id}.fq.gz  --al-gz blacklist_unpaired_aligned_${organism_sample_id}.fq.gz --un-gz blacklist_unpaired_unaligned_${organism_sample_id}.fq.gz -S ${organism_sample_id}_alignment.sam
+        bowtie2 --quiet --very-sensitive-local --phred33  -x ${sourcedirectory}/assets/SILVA/SILVA_indexed/SILVA.fasta.bowtie2 -1 $fq1_bbdu -2 $fq2_bbdu --threads 12 --met-file ${organism_sample_id}_bowtie2_metrics.txt --al-conc-gz blacklist_paired_aligned_${organism_sample_id}.fq.gz --un-conc-gz blacklist_paired_unaligned_${organism_sample_id}.fq.gz  --al-gz blacklist_unpaired_aligned_${organism_sample_id}.fq.gz --un-gz blacklist_unpaired_unaligned_${organism_sample_id}.fq.gz -S ${organism_sample_id}_alignment.sam
 } >pristine_06_remove_rrna.o 2>&1  || exit 1
 
 echo "done removal of rrna. keep blacklist_paired_unaligned."
@@ -283,7 +294,7 @@ echo
 echo "assigning paired unaligned reads to pipeline variables fq1_noribo and fq2_noribo"
 fq1_noribo=$(realpath $(find . -name blacklist_paired_unaligned_*1.gz))
 fq2_noribo=$(realpath $(find . -name blacklist_paired_unaligned_*2.gz))
-cd ..
+cd $workingdirectory
 echo
 echo
 echo
@@ -317,7 +328,7 @@ conda deactivate
 echo
 echo
 echo "now out of virtual environment"
-cd ..
+cd $workingdirectory
 echo
 echo
 
@@ -363,7 +374,7 @@ conda deactivate
 echo
 echo
 echo "now out of virtual environment"
-cd ..
+cd $workingdirectory
 echo
 echo
 
@@ -401,7 +412,7 @@ echo
 echo "now out of virtual environment"
 echo "assigning transdecoder output to pipeline variable tdpep"
 tdpep=$(realpath $(find ./ -name *.transdecoder.pep))
-cd ..
+cd $workingdirectory
 echo
 echo
 
@@ -433,7 +444,7 @@ conda deactivate
 echo
 echo
 echo "now out of virtual environment"
-cd ..
+cd $workingdirectory
 echo
 echo
 echo "Generating stats of the run: trinity and busco..."
@@ -451,6 +462,6 @@ echo -e "\n\n*** BUSCO COMPLETENESS ANALYSIS OF: SUPERTRANCRIPT-DERIVED, SINGLE-
 cat 10_busco/*busco_out/short_summary*busco_out.txt >> FINAL_METRICS.txt
 echo ""
 echo
+cd
 echo
 echo "Done."
-

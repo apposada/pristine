@@ -1,0 +1,1 @@
+the list of contaminants was downloaded from https://github.com/s-andrews/FastQC/blob/master/Configuration/contaminant_list.txt and concatenated to bbduk's adapters.fasta database.

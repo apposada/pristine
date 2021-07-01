@@ -279,7 +279,7 @@ echo
 echo "starting alignment against SILVA database to keep unaligned (==non-ribosomal) reads"
 {
         echo A
-        bowtie2 --quiet --very-sensitive-local --phred33  -x ${sourcedirectory}/assets/SILVA/SILVA_indexed/SILVA.fasta.bowtie2 -1 $fq1_bbdu -2 $fq2_bbdu --threads 12 --met-file ${organism_sample_id}_bowtie2_metrics.txt --al-conc-gz blacklist_paired_aligned_${organism_sample_id}.fq.gz --un-conc-gz blacklist_paired_unaligned_${organism_sample_id}.fq.gz  --al-gz blacklist_unpaired_aligned_${organism_sample_id}.fq.gz --un-gz blacklist_unpaired_unaligned_${organism_sample_id}.fq.gz -S ${organism_sample_id}_alignment.sam
+        bowtie2 --quiet --very-sensitive-local --phred33  -x ${sourcedirectory}/assets/SILVA/SILVA.fasta.bowtie2 -1 $fq1_bbdu -2 $fq2_bbdu --threads 12 --met-file ${organism_sample_id}_bowtie2_metrics.txt --al-conc-gz blacklist_paired_aligned_${organism_sample_id}.fq.gz --un-conc-gz blacklist_paired_unaligned_${organism_sample_id}.fq.gz  --al-gz blacklist_unpaired_aligned_${organism_sample_id}.fq.gz --un-gz blacklist_unpaired_unaligned_${organism_sample_id}.fq.gz -S ${organism_sample_id}_alignment.sam
 } >pristine_06_remove_rrna.o 2>&1  || exit 1
 
 echo "done removal of rrna. keep blacklist_paired_unaligned."

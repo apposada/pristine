@@ -1,4 +1,4 @@
-# pristine
+# pristine 🧬✨
 This is a workflow for automated de novo transcriptome assembly following state of the art quality standards. It is currently in development and it is intended for personal use (at the moment).
 
 This workflow heavily borrows from Harvard's good practices for de novo transcriptome assembly, plus adding some steps of quality control and improvement. Credits for the flow design goes to them:

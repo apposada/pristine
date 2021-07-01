@@ -8,11 +8,11 @@ The idea is to first clean up the FASTQs from low quality reads, adapter sequenc
 
 Important info:
 
-Please note that this is in development. I am learning a lot in bioinformatics and how to code as I develop this.
+Please note that this is in development. I am learning a lot in bioinformatics and how to code as I develop this. Many path references are specific of my current setup so at the moment it is not available for direct execution.
 
 pristine is intended to run in a hpc system, preferrably using a workload manager to allocate a whole node, due to the memory-intense steps of bowtie2 and Trinity.
 
-pristine requires a conda environment with all the software that is used (perhaps a package recipe could be created).
+pristine requires a conda environment with all the software that is used (perhaps a package recipe could be created in the future).
 
 pristine starts from a pair ofpaired-end read FASTQs and assembles de novo using trinity. It currently does not support multiple samples as separate files. Thus, the pair of FASTQs can be a single sample or a concatenations of multiple samples and conditions.
 

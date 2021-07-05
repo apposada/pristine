@@ -1,5 +1,10 @@
 #!/bin/bash
+#missing: the reference to the conda installation path
+#missing: to actually test if it works
+#missing: more verbosity, more echos
+#missing: a small test with a 50MB fastq, see how to simulate fastq data (or grab a small chunk from human fastqs or something)
 
+echo "Setting up pristine workflow..."
 source /home/aperpos/programs/miniconda3/bin/activate
 conda install -c conda-forge mamba
 mamba create -n pristine_venv -c bioconda -c conda-forge fastqc rcorrector trim-galore bbmap bowtie2 trinity transdecoder hmmer busco
